@@ -2,7 +2,11 @@
   "manifest_version": 3,
   "name": "Contest Notifier",
   "version": "1.0",
-  "permissions": ["storage"],
+  "permissions": [ "storage",
+    "alarms",
+    "windows",
+    "notifications",
+    "tabs"],
   "host_permissions": ["http://localhost:3000/*"],
   "background": {
     "service_worker": "background.js"
@@ -10,5 +14,8 @@
   "action": {
     "default_popup": "popup.html"
   },
-  "icons": { "128": "vite.svg" }
+  "web_accessible_resources": [{
+    "resources": ["reminder.html"],
+    "matches": ["<all_urls>"]
+  }]
 }

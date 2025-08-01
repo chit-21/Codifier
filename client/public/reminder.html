@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Contest Reminder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ff4444;
+      color: white;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 180px;
+      user-select: none;
+    }
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+    }
+    #contest-message {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+    button {
+      background: white;
+      color: #a6adc8;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 0 5px;
+    }
+    button:hover {
+      background: #ffeaea;
+    }
+  </style>
+</head>
+<body>
+  <h1>⏰ Contest Reminder!</h1>
+  <div id="contest-message">Loading...</div>
+ 
+  <script src="reminder.js"></script>
+</body>
+</html>

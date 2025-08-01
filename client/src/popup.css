@@ -364,3 +364,25 @@ body {
   display: flex;
   align-items: center;
 }
+
+.contest-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.set-reminder-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.set-reminder-button:hover {
+  background-color: #0056b3;
+}
