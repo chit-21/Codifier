@@ -4,11 +4,9 @@
   "description": "Standalone contest scrapers for Contest Notifier Chrome Extension",
   "main": "standalone-scrapers.js",
   "scripts": {
-    "start": "node index-new.js",
+    "start": "node standalone-scrapers.js",
     "test": "node test-scrapers.js",
-    "dev": "nodemon index-new.js",
-    "scrape-all": "node standalone-scrapers.js --all",
-    "scrape": "node standalone-scrapers.js"
+    "dev": "nodemon standalone-scrapers.js"
   },
   "keywords": ["contest", "scraper", "competitive-programming"],
   "author": "",

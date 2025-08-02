@@ -3,7 +3,7 @@ import './popup.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE = 'http://localhost:3000/api/contests'; // Change if deployed
+// Removed API_BASE - now using background script for data
 
 const TIME_FILTERS = [
   { label: 'All', value: '' },
@@ -67,12 +67,29 @@ const PLATFORM_ICONS = {
 // };
 
 const setContestAlarm = (contest) => {
-  // Always set to 1 minute for testing
   const contestTime = new Date(contest.startTime).getTime();
-  const triggerTime = contestTime - 10 * 60 * 1000;
-  const delayInMinutes = (triggerTime - Date.now()) / (1000 * 60);
-//   const delayInMinutes = 1;
-  // const delayInMinutes = 1;
+  const now = Date.now();
+  const timeUntilContest = (contestTime - now) / (1000 * 60); // minutes until contest starts
+  const triggerTime = contestTime - 10 * 60 * 1000; // 10 minutes before contest
+  const delayInMinutes = (triggerTime - now) / (1000 * 60);
+  
+  // Check if contest starts within 10 minutes
+  if (timeUntilContest <= 10) {
+    if (timeUntilContest <= 0) {
+      toast.info(`⏰ "${contest.name}" has already started! Check it out now.`);
+    } else {
+      const minutesLeft = Math.ceil(timeUntilContest);
+      toast.info(`⏰ "${contest.name}" starts in less than ${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}! No reminder needed.`);
+    }
+    return;
+  }
+  
+  // Check if delay is too small (less than 1 minute)
+  if (delayInMinutes < 1) {
+    toast.info(`⏰ "${contest.name}" starts very soon! No reminder needed.`);
+    return;
+  }
+  
   const alarmName = `contest_${contest.name.replace(/\s/g, "_")}`;
   
   // Get platform icon for this contest
@@ -82,15 +99,26 @@ const setContestAlarm = (contest) => {
     action: 'setContestAlarm',
     name: contest.name,
     alarmName,
-    delayInMinutes: delayInMinutes,
+    delayInMinutes: Math.ceil(delayInMinutes), // Round up to ensure positive integer
     contestURL: contest.url,
     platformIcon: platformIcon
   }, (response) => {
     if (response && response.success) {
-  toast.success(`✅ Reminder set for "${contest.name}" in ${delayInMinutes} minute!`);
-} else {
-  toast.error(`❌ Failed to set reminder: ${response?.error || 'Unknown error'}`);
-}
+      const reminderTime = Math.ceil(delayInMinutes);
+      const hours = Math.floor(reminderTime / 60);
+      const minutes = reminderTime % 60;
+      
+      let timeText;
+      if (hours > 0) {
+        timeText = `${hours}h ${minutes}m`;
+      } else {
+        timeText = `${minutes} minute${minutes === 1 ? '' : 's'}`;
+      }
+      
+      toast.success(`✅ Reminder set for "${contest.name}" in ${timeText}!`);
+    } else {
+      toast.error(`❌ Failed to set reminder: ${response?.error || 'Unknown error'}`);
+    }
   });
 };
 
@@ -118,30 +146,26 @@ export default function Popup() {
   }, []);
 
   useEffect(() => {
-    let url = API_BASE;
-    if (filter === 'live') url += '/live';
-    else if (filter === 'month') url += '/upcoming?range=month';
-    else if (filter === 'week') url += '/upcoming?range=week';
-
-    const hasQueryParam = url.includes('?');
-    if (platform !== 'all') {
-      url += `${hasQueryParam ? '&' : '?'}platform=${platform}`;
-    }
-
     setLoading(true);
     setError(null);
 
-    console.log('Fetching contests from URL:', url);
+    console.log('Fetching contests from background script...');
 
-    fetch(url)
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(response => {
-        const sortedContests = (response.data || []).sort((a, b) => {
+    // Send message to background script to get contests
+    chrome.runtime.sendMessage({
+      action: 'getContests',
+      platform: platform,
+      timeFilter: filter
+    }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('Runtime error:', chrome.runtime.lastError);
+        setError('Failed to communicate with background script.');
+        setLoading(false);
+        return;
+      }
+
+      if (response && response.success) {
+        const sortedContests = (response.contests || []).sort((a, b) => {
           if (a.endTime && b.endTime) return new Date(a.endTime) - new Date(b.endTime);
           else if (a.endTime) return -1;
           else if (b.endTime) return 1;
@@ -150,12 +174,12 @@ export default function Popup() {
 
         setContests(sortedContests);
         setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching contests:', error);
-        setError('Failed to load contests. Please try again.');
+      } else {
+        console.error('Error fetching contests:', response?.error || 'Unknown error');
+        setError(response?.error || 'Failed to load contests. Please try again.');
         setLoading(false);
-      });
+      }
+    });
   }, [filter, platform]);
 
   const formatDate = (dateString) => {
@@ -185,15 +209,59 @@ export default function Popup() {
     return `${minutes}m`;
   };
 
+  const handleRefresh = () => {
+    console.log('Manual refresh requested');
+    setLoading(true);
+    setError(null);
+
+    chrome.runtime.sendMessage({
+      action: 'refreshContests'
+    }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('Runtime error:', chrome.runtime.lastError);
+        setError('Failed to refresh contests.');
+        setLoading(false);
+        return;
+      }
+
+      if (response && response.success) {
+        toast.success('Contests refreshed successfully!');
+        // Trigger a re-fetch of contests with current filters
+        chrome.runtime.sendMessage({
+          action: 'getContests',
+          platform: platform,
+          timeFilter: filter
+        }, (contestResponse) => {
+          if (contestResponse && contestResponse.success) {
+            const sortedContests = (contestResponse.contests || []).sort((a, b) => {
+              if (a.endTime && b.endTime) return new Date(a.endTime) - new Date(b.endTime);
+              else if (a.endTime) return -1;
+              else if (b.endTime) return 1;
+              return new Date(a.startTime) - new Date(b.startTime);
+            });
+            setContests(sortedContests);
+          }
+          setLoading(false);
+        });
+      } else {
+        console.error('Error refreshing contests:', response?.error || 'Unknown error');
+        setError(response?.error || 'Failed to refresh contests.');
+        setLoading(false);
+        toast.error('Failed to refresh contests');
+      }
+    });
+  };
+
   return (
     <div className="popup-container">
       <div className="header">
-        <h1 className="title">Contest Notifier</h1>
+        <h1 className="title">Codifier</h1>
         <div className="header-icons">
           <button 
             className="icon-button refresh-button" 
-            onClick={() => window.location.reload()}
-            title="Refresh"
+            onClick={handleRefresh}
+            title="Refresh contests"
+            disabled={loading}
           >
             🔄
           </button>

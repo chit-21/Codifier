@@ -144,7 +144,7 @@ chrome.runtime.onMessage.addListener(handleMessage);
 // Badge clear on icon click
 chrome.action.onClicked.addListener(() => {
   chrome.action.setBadgeText({ text: '' });
-  chrome.action.setTitle({ title: 'Contest Notifier' });
+  chrome.action.setTitle({ title: 'Codifier - Contest Tracker' });
   console.log('🧹 Badge cleared by user click');
 });
 

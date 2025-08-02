@@ -1,16 +1,37 @@
 {
   "manifest_version": 3,
-  "name": "Contest Notifier",
-  "version": "1.0",
+  "name": "Codifier",
+  "description": "Stay updated with competitive programming contests from multiple platforms",
+  "version": "2.0",
   "permissions": [ "storage", "alarms", "notifications", "tabs",
     "windows",
     "tabs"],
-  "host_permissions": ["http://localhost:3000/*"],
+  "host_permissions": [
+    "https://codeforces.com/*",
+    "https://leetcode.com/*",
+    "https://atcoder.jp/*",
+    "https://www.codechef.com/*",
+    "https://practiceapi.geeksforgeeks.org/*",
+    "https://www.codingninjas.com/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_title": "Codifier - Contest Tracker",
+    "default_icon": {
+      "16": "platforms/icon.png",
+      "32": "platforms/icon.png",
+      "48": "platforms/icon.png",
+      "128": "platforms/icon.png"
+    }
+  },
+  "icons": {
+    "16": "platforms/icon.png",
+    "32": "platforms/icon.png",
+    "48": "platforms/icon.png",
+    "128": "platforms/icon.png"
   },
   "web_accessible_resources": [{
     "resources": [ "modern-reminder.html", "modern-reminder.js", "sliding-reminder.html", "sliding-reminder.js"],
