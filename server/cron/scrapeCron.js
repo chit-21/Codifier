@@ -9,23 +9,23 @@ const { performFullCleanup } = require('../services/cleanup');
 
 // Run every 30 minutes
 cron.schedule('*/30 * * * *', async () => {
-  console.log('⏰ [CRON] Scheduled contest scraping started!');
+  console.log('[CRON] Scheduled contest scraping started!');
   await getCodeforcesContests();
   await getLeetCodeContests();
   await getAtCoderContests();
   await getCodeChefContests();
   await getGFGContests();
   await getCodingNinjasContests();
-  console.log('✅ [CRON] Scheduled contest scraping finished!');
+  console.log('[CRON] Scheduled contest scraping finished!');
 });
 
 // Schedule full cleanup every day at 2:00 AM
 cron.schedule('0 2 * * *', async () => {
-  console.log('🧹 Running scheduled full cleanup...');
+  console.log('Running scheduled full cleanup...');
   await performFullCleanup();
 });
 cron.schedule('0 2 * * *', async () => {
-  console.log('🧹 [CRON] Running full contest cleanup...');
+  console.log('[CRON] Running full contest cleanup...');
   await performFullCleanup();
-  console.log('✅ [CRON] Cleanup finished!');
+  console.log('[CRON] Cleanup finished!');
 });

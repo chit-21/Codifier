@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './popup.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const API_BASE = 'http://localhost:3000/api/contests'; // Change if deployed
 
@@ -35,32 +37,60 @@ const PLATFORM_ICONS = {
 };
 
 // Set alarm 10 minutes before contest
+// const setContestAlarm = (contest) => {
+//   const contestTime = new Date(contest.startTime).getTime();
+//   const triggerTime = contestTime - 10 * 60 * 1000;
+//   // const delayInMinutes = (triggerTime - Date.now()) / (1000 * 60);
+//   const delayInMinutes = 1;
+
+//   if (delayInMinutes <= 0) {
+//     alert("Contest is starting soon or already started!");
+//     return;
+//   }
+
+//   // Chrome enforces 1-minute minimum for packed extensions
+//   const actualDelay = Math.max(1, Math.ceil(delayInMinutes));
+//   const alarmName = `contest_${contest.name.replace(/\s/g, "_")}`;
+
+//   chrome.runtime.sendMessage({
+//     action: 'setContestAlarm',
+//     name: contest.name,
+//     alarmName,
+//     delayInMinutes: actualDelay
+//   }, (response) => {
+//     if (response && response.success) {
+//       alert(`✅ Reminder set for "${contest.name}" in ${actualDelay} minutes.`);
+//     } else {
+//       alert(`❌ Failed to set reminder: ${response?.error || 'Unknown error'}`);
+//     }
+//   });
+// };
+
 const setContestAlarm = (contest) => {
+  // Always set to 1 minute for testing
   const contestTime = new Date(contest.startTime).getTime();
   const triggerTime = contestTime - 10 * 60 * 1000;
   const delayInMinutes = (triggerTime - Date.now()) / (1000 * 60);
+//   const delayInMinutes = 1;
   // const delayInMinutes = 1;
-
-  if (delayInMinutes <= 0) {
-    alert("Contest is starting soon or already started!");
-    return;
-  }
-
-  // Chrome enforces 1-minute minimum for packed extensions
-  const actualDelay = Math.max(1, Math.ceil(delayInMinutes));
   const alarmName = `contest_${contest.name.replace(/\s/g, "_")}`;
+  
+  // Get platform icon for this contest
+  const platformIcon = PLATFORM_ICONS[contest.platform] || 'platforms/codeforces.png';
 
   chrome.runtime.sendMessage({
     action: 'setContestAlarm',
     name: contest.name,
     alarmName,
-    delayInMinutes: actualDelay
+    delayInMinutes: delayInMinutes,
+    contestURL: contest.url,
+    platformIcon: platformIcon
   }, (response) => {
     if (response && response.success) {
-      alert(`✅ Reminder set for "${contest.name}" in ${actualDelay} minutes.`);
-    } else {
-      alert(`❌ Failed to set reminder: ${response?.error || 'Unknown error'}`);
-    }
+  toast.success(`✅ Reminder set for "${contest.name}" in ${delayInMinutes} minute!`);
+} else {
+  toast.error(`❌ Failed to set reminder: ${response?.error || 'Unknown error'}`);
+}
   });
 };
 
@@ -281,6 +311,17 @@ export default function Popup() {
           })
         )}
       </div>
+      <ToastContainer
+  position="bottom-right"
+  autoClose={3000}
+  hideProgressBar={false}
+  newestOnTop={false}
+  closeOnClick
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+  theme={theme}
+/>
     </div>
   );
 }

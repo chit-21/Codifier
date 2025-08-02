@@ -2,10 +2,8 @@
   "manifest_version": 3,
   "name": "Contest Notifier",
   "version": "1.0",
-  "permissions": [ "storage",
-    "alarms",
+  "permissions": [ "storage", "alarms", "notifications", "tabs",
     "windows",
-    "notifications",
     "tabs"],
   "host_permissions": ["http://localhost:3000/*"],
   "background": {
@@ -15,7 +13,7 @@
     "default_popup": "popup.html"
   },
   "web_accessible_resources": [{
-    "resources": ["reminder.html"],
+    "resources": [ "modern-reminder.html", "modern-reminder.js", "sliding-reminder.html", "sliding-reminder.js"],
     "matches": ["<all_urls>"]
   }]
 }

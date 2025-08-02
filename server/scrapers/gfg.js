@@ -7,7 +7,7 @@ const GFG_API = "https://practiceapi.geeksforgeeks.org/api/vr/events/?page_numbe
 // Fetch contests from GeeksforGeeks API
 const fetchGFGContests = async () => {
   try {
-    console.log('🔍 Fetching contests from GeeksforGeeks API...');
+    console.log('Fetching contests from GeeksforGeeks API...');
     
     const response = await axios.get(GFG_API, {
       headers: {
@@ -23,10 +23,10 @@ const fetchGFGContests = async () => {
       result = data.results.upcoming;
     }
 
-    console.log(`✅ Fetched ${result.length} contests from GeeksforGeeks`);
+    console.log(`Fetched ${result.length} contests from GeeksforGeeks`);
     return result;
   } catch (error) {
-    console.error('❌ Error fetching GeeksforGeeks contests:', error.message);
+    console.error('Error fetching GeeksforGeeks contests:', error.message);
     return [];
   }
 };
@@ -74,7 +74,7 @@ const parseGFGContests = (data) => {
     }
   });
 
-  console.log(`📋 Parsed ${contests.length} upcoming/live GeeksforGeeks contests`);
+  console.log(`Parsed ${contests.length} upcoming/live GeeksforGeeks contests`);
   return contests;
 };
 
@@ -100,10 +100,10 @@ const saveContestsToDatabase = async (contests) => {
       }
     }
 
-    console.log(`💾 Saved ${savedCount} new contests, updated ${updatedCount} existing contests`);
+    console.log(`Saved ${savedCount} new contests, updated ${updatedCount} existing contests`);
     return { saved: savedCount, updated: updatedCount };
   } catch (error) {
-    console.error('❌ Error saving contests to database:', error.message);
+    console.error('Error saving contests to database:', error.message);
     throw error;
   }
 };
@@ -111,25 +111,25 @@ const saveContestsToDatabase = async (contests) => {
 // Main function to get and save GeeksforGeeks contests
 const getGFGContests = async () => {
   try {
-    console.log('🚀 Starting GeeksforGeeks contest scraping...');
+    console.log('Starting GeeksforGeeks contest scraping...');
     
     const rawData = await fetchGFGContests();
     
     if (rawData.length === 0) {
-      console.log('⚠️ No contests fetched from GeeksforGeeks');
+      console.log('No contests fetched from GeeksforGeeks');
       return { success: false, message: 'No contests fetched' };
     }
 
     const parsedContests = parseGFGContests(rawData);
     
     if (parsedContests.length === 0) {
-      console.log('⚠️ No upcoming/live contests found');
+      console.log('No upcoming/live contests found');
       return { success: true, message: 'No upcoming contests', count: 0 };
     }
 
     const saveResult = await saveContestsToDatabase(parsedContests);
     
-    console.log('🎉 GeeksforGeeks scraping completed successfully!');
+    console.log('GeeksforGeeks scraping completed successfully!');
     return {
       success: true,
       platform: 'gfg',
@@ -140,7 +140,7 @@ const getGFGContests = async () => {
     };
     
   } catch (error) {
-    console.error('❌ Error in GeeksforGeeks scraping:', error.message);
+    console.error('Error in GeeksforGeeks scraping:', error.message);
     return {
       success: false,
       platform: 'gfg',

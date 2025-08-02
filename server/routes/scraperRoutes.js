@@ -11,7 +11,7 @@ const { performFullCleanup } = require('../services/cleanup');
 // POST /api/scraper/codeforces - Manually trigger Codeforces scraping
 router.post('/codeforces', async (req, res) => {
   try {
-    console.log('🚀 Manual Codeforces scraping triggered via API');
+    console.log('Manual Codeforces scraping triggered via API');
     
     const result = await getCodeforcesContests();
     
@@ -30,7 +30,7 @@ router.post('/codeforces', async (req, res) => {
     }
     
   } catch (error) {
-    console.error('❌ Error in Codeforces scraping route:', error.message);
+    console.error('Error in Codeforces scraping route:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error during Codeforces scraping',
@@ -42,7 +42,7 @@ router.post('/codeforces', async (req, res) => {
 // POST /api/scraper/leetcode - Manually trigger LeetCode scraping
 router.post('/leetcode', async (req, res) => {
   try {
-    console.log('🚀 Manual LeetCode scraping triggered via API');
+    console.log('Manual LeetCode scraping triggered via API');
     const result = await getLeetCodeContests();
     
     if (result.success) {
@@ -59,7 +59,7 @@ router.post('/leetcode', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('❌ Error in LeetCode scraping route:', error.message);
+    console.error('Error in LeetCode scraping route:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error during LeetCode scraping',
@@ -71,7 +71,7 @@ router.post('/leetcode', async (req, res) => {
 // POST /api/scraper/atcoder - Manually trigger AtCoder scraping
 router.post('/atcoder', async (req, res) => {
   try {
-    console.log('🚀 Manual AtCoder scraping triggered via API');
+    console.log('Manual AtCoder scraping triggered via API');
     const result = await getAtCoderContests();
     
     if (result.success) {
@@ -88,7 +88,7 @@ router.post('/atcoder', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('❌ Error in AtCoder scraping route:', error.message);
+    console.error('Error in AtCoder scraping route:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error during AtCoder scraping',
@@ -100,7 +100,7 @@ router.post('/atcoder', async (req, res) => {
 // POST /api/scraper/codechef - Manually trigger CodeChef scraping
 router.post('/codechef', async (req, res) => {
   try {
-    console.log('🚀 Manual CodeChef scraping triggered via API');
+    console.log('Manual CodeChef scraping triggered via API');
     const result = await getCodeChefContests();
     
     if (result.success) {
@@ -117,7 +117,7 @@ router.post('/codechef', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('❌ Error in CodeChef scraping route:', error.message);
+    console.error('Error in CodeChef scraping route:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error during CodeChef scraping',
@@ -129,7 +129,7 @@ router.post('/codechef', async (req, res) => {
 // POST /api/scraper/gfg - Manually trigger GeeksforGeeks scraping
 router.post('/gfg', async (req, res) => {
   try {
-    console.log('🚀 Manual GeeksforGeeks scraping triggered via API');
+    console.log('Manual GeeksforGeeks scraping triggered via API');
     const result = await getGFGContests();
     
     if (result.success) {
@@ -146,7 +146,7 @@ router.post('/gfg', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('❌ Error in GeeksforGeeks scraping route:', error.message);
+    console.error('Error in GeeksforGeeks scraping route:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error during GeeksforGeeks scraping',
@@ -158,7 +158,7 @@ router.post('/gfg', async (req, res) => {
 // POST /api/scraper/codingninjas - Manually trigger CodingNinjas scraping
 router.post('/codingninjas', async (req, res) => {
   try {
-    console.log('🚀 Manual CodingNinjas scraping triggered via API');
+    console.log('Manual CodingNinjas scraping triggered via API');
     const result = await getCodingNinjasContests();
     
     if (result.success) {
@@ -175,7 +175,7 @@ router.post('/codingninjas', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('❌ Error in CodingNinjas scraping route:', error.message);
+    console.error('Error in CodingNinjas scraping route:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error during CodingNinjas scraping',
@@ -187,7 +187,7 @@ router.post('/codingninjas', async (req, res) => {
 // POST /api/scraper/all - Trigger scraping for all platforms
 router.post('/all', async (req, res) => {
   try {
-    console.log('🚀 Scraping all platforms triggered via API');
+    console.log('Scraping all platforms triggered via API');
     
     const results = [];
     const scrapers = [
@@ -205,7 +205,7 @@ router.post('/all', async (req, res) => {
         const result = await scraper();
         return { platform: name, ...result };
       } catch (error) {
-        console.error(`❌ Error scraping ${name}:`, error.message);
+        console.error(`Error scraping ${name}:`, error.message);
         return { platform: name, success: false, error: error.message };
       }
     });
@@ -231,7 +231,7 @@ router.post('/all', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Error in all platforms scraping:', error.message);
+    console.error('Error in all platforms scraping:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error during platform scraping',
@@ -262,7 +262,7 @@ router.post('/cleanup', async (req, res) => {
     }
     
   } catch (error) {
-    console.error('❌ Error in cleanup route:', error.message);
+    console.error('Error in cleanup route:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error during database cleanup',
@@ -310,7 +310,7 @@ router.get('/status', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Error getting scraper status:', error.message);
+    console.error('Error getting scraper status:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error getting scraper status',

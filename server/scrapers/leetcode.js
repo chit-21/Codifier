@@ -7,7 +7,7 @@ const LEETCODE_API = "https://leetcode.com/graphql";
 // Fetch contests from LeetCode GraphQL API
 const fetchLeetCodeContests = async () => {
   try {
-    console.log('🔍 Fetching contests from LeetCode API...');
+    console.log('Fetching contests from LeetCode API...');
     
     const response = await axios.post(LEETCODE_API, {
       query: `{
@@ -32,10 +32,10 @@ const fetchLeetCodeContests = async () => {
       throw new Error('LeetCode GraphQL API returned errors');
     }
 
-    console.log(`✅ Fetched ${data.data.topTwoContests?.length || 0} contests from LeetCode`);
+    console.log(` Fetched ${data.data.topTwoContests?.length || 0} contests from LeetCode`);
     return data.data.topTwoContests || [];
   } catch (error) {
-    console.error('❌ Error fetching LeetCode contests:', error.message);
+    console.error(' Error fetching LeetCode contests:', error.message);
     return [];
   }
 };
@@ -70,7 +70,7 @@ const parseLeetCodeContests = (data) => {
     }
   });
 
-  console.log(`📋 Parsed ${contests.length} upcoming LeetCode contests`);
+  console.log(` Parsed ${contests.length} upcoming LeetCode contests`);
   return contests;
 };
 
@@ -96,10 +96,10 @@ const saveContestsToDatabase = async (contests) => {
       }
     }
 
-    console.log(`💾 Saved ${savedCount} new contests, updated ${updatedCount} existing contests`);
+    console.log(` Saved ${savedCount} new contests, updated ${updatedCount} existing contests`);
     return { saved: savedCount, updated: updatedCount };
   } catch (error) {
-    console.error('❌ Error saving contests to database:', error.message);
+    console.error(' Error saving contests to database:', error.message);
     throw error;
   }
 };
@@ -107,25 +107,25 @@ const saveContestsToDatabase = async (contests) => {
 // Main function to get and save LeetCode contests
 const getLeetCodeContests = async () => {
   try {
-    console.log('🚀 Starting LeetCode contest scraping...');
+    console.log(' Starting LeetCode contest scraping...');
     
     const rawData = await fetchLeetCodeContests();
     
     if (rawData.length === 0) {
-      console.log('⚠️ No contests fetched from LeetCode');
+      console.log(' No contests fetched from LeetCode');
       return { success: false, message: 'No contests fetched' };
     }
 
     const parsedContests = parseLeetCodeContests(rawData);
     
     if (parsedContests.length === 0) {
-      console.log('⚠️ No upcoming contests found');
+      console.log(' No upcoming contests found');
       return { success: true, message: 'No upcoming contests', count: 0 };
     }
 
     const saveResult = await saveContestsToDatabase(parsedContests);
     
-    console.log('🎉 LeetCode scraping completed successfully!');
+    console.log(' LeetCode scraping completed successfully!');
     return {
       success: true,
       platform: 'leetcode',
@@ -136,7 +136,7 @@ const getLeetCodeContests = async () => {
     };
     
   } catch (error) {
-    console.error('❌ Error in LeetCode scraping:', error.message);
+    console.error(' Error in LeetCode scraping:', error.message);
     return {
       success: false,
       platform: 'leetcode',

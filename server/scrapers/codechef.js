@@ -7,7 +7,7 @@ const CODECHEF_API = "https://www.codechef.com/api/list/contests/all?sort_by=STA
 // Fetch contests from CodeChef API
 const fetchCodeChefContests = async () => {
   try {
-    console.log('🔍 Fetching contests from CodeChef API...');
+    console.log('Fetching contests from CodeChef API...');
     
     const response = await axios.get(CODECHEF_API, {
       headers: {
@@ -26,10 +26,10 @@ const fetchCodeChefContests = async () => {
       result = [...result, ...data.future_contests];
     }
 
-    console.log(`✅ Fetched ${result.length} contests from CodeChef`);
+    console.log(`Fetched ${result.length} contests from CodeChef`);
     return result;
   } catch (error) {
-    console.error('❌ Error fetching CodeChef contests:', error.message);
+    console.error('Error fetching CodeChef contests:', error.message);
     return [];
   }
 };
@@ -73,7 +73,7 @@ const parseCodeChefContests = (data) => {
     }
   });
 
-  console.log(`📋 Parsed ${contests.length} upcoming/live CodeChef contests`);
+  console.log(`Parsed ${contests.length} upcoming/live CodeChef contests`);
   return contests;
 };
 
@@ -99,10 +99,10 @@ const saveContestsToDatabase = async (contests) => {
       }
     }
 
-    console.log(`💾 Saved ${savedCount} new contests, updated ${updatedCount} existing contests`);
+    console.log(`Saved ${savedCount} new contests, updated ${updatedCount} existing contests`);
     return { saved: savedCount, updated: updatedCount };
   } catch (error) {
-    console.error('❌ Error saving contests to database:', error.message);
+    console.error('Error saving contests to database:', error.message);
     throw error;
   }
 };
@@ -110,25 +110,25 @@ const saveContestsToDatabase = async (contests) => {
 // Main function to get and save CodeChef contests
 const getCodeChefContests = async () => {
   try {
-    console.log('🚀 Starting CodeChef contest scraping...');
+    console.log('Starting CodeChef contest scraping...');
     
     const rawData = await fetchCodeChefContests();
     
     if (rawData.length === 0) {
-      console.log('⚠️ No contests fetched from CodeChef');
+      console.log('No contests fetched from CodeChef');
       return { success: false, message: 'No contests fetched' };
     }
 
     const parsedContests = parseCodeChefContests(rawData);
     
     if (parsedContests.length === 0) {
-      console.log('⚠️ No upcoming/live contests found');
+      console.log('No upcoming/live contests found');
       return { success: true, message: 'No upcoming contests', count: 0 };
     }
 
     const saveResult = await saveContestsToDatabase(parsedContests);
     
-    console.log('🎉 CodeChef scraping completed successfully!');
+    console.log('CodeChef scraping completed successfully!');
     return {
       success: true,
       platform: 'codechef',
@@ -139,7 +139,7 @@ const getCodeChefContests = async () => {
     };
     
   } catch (error) {
-    console.error('❌ Error in CodeChef scraping:', error.message);
+    console.error('Error in CodeChef scraping:', error.message);
     return {
       success: false,
       platform: 'codechef',

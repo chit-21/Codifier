@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Contest Reminder</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .reminder-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      max-width: 400px;
+      width: 90%;
+      animation: slideIn 0.5s ease-out;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .contest-message {
+      font-size: 1.1rem;
+      margin-bottom: 25px;
+      color: #555;
+      line-height: 1.4;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f8f9fa;
+      color: #6c757d;
+      border: 2px solid #e9ecef;
+    }
+
+    .btn-secondary:hover {
+      background: #e9ecef;
+      transform: translateY(-2px);
+    }
+
+    .countdown {
+      font-size: 0.9rem;
+      color: #888;
+      margin-top: 15px;
+      font-style: italic;
+    }
+
+    .platform-icon {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @media (max-width: 480px) {
+      .reminder-container {
+        padding: 20px;
+        margin: 20px;
+      }
+      
+      .button-group {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="reminder-container">
+    <div class="icon">⏰</div>
+    <h1>Contest Reminder!</h1>
+    <div id="contest-message" class="contest-message">Loading contest details...</div>
+    
+    <div class="button-group">
+      <button id="open-contest" class="btn btn-primary">
+        <img id="platform-icon" class="platform-icon" src="platforms/codeforces.png" alt="Platform">
+        Open Contest
+      </button>
+      <button id="dismiss" class="btn btn-secondary">Dismiss</button>
+    </div>
+    
+    <div class="countdown">This popup will auto-close in <span id="timer">15</span> seconds</div>
+  </div>
+
+  <script src="modern-reminder.js"></script>
+</body>
+</html> 

@@ -7,7 +7,7 @@ const CODING_NINJA_API = "https://api.codingninjas.com/api/v4/public_section/con
 // Fetch contests from CodingNinjas API
 const fetchCodingNinjasContests = async () => {
   try {
-    console.log('🔍 Fetching contests from CodingNinjas API...');
+    console.log('Fetching contests from CodingNinjas API...');
     
     const response = await axios.get(CODING_NINJA_API, {
       headers: {
@@ -18,14 +18,14 @@ const fetchCodingNinjasContests = async () => {
     const data = response.data;
     
     if (data?.data?.events) {
-      console.log(`✅ Fetched ${data.data.events.length} contests from CodingNinjas`);
+      console.log(`Fetched ${data.data.events.length} contests from CodingNinjas`);
       return data.data.events;
     }
     
-    console.log('⚠️ No events found in CodingNinjas API response');
+    console.log('No events found in CodingNinjas API response');
     return [];
   } catch (error) {
-    console.error('❌ Error fetching CodingNinjas contests:', error.message);
+    console.error('Error fetching CodingNinjas contests:', error.message);
     return [];
   }
 };
@@ -69,7 +69,7 @@ const parseCodingNinjasContests = (data) => {
     }
   });
 
-  console.log(`📋 Parsed ${contests.length} upcoming/live CodingNinjas contests`);
+  console.log(`Parsed ${contests.length} upcoming/live CodingNinjas contests`);
   return contests;
 };
 
@@ -95,10 +95,10 @@ const saveContestsToDatabase = async (contests) => {
       }
     }
 
-    console.log(`💾 Saved ${savedCount} new contests, updated ${updatedCount} existing contests`);
+    console.log(`Saved ${savedCount} new contests, updated ${updatedCount} existing contests`);
     return { saved: savedCount, updated: updatedCount };
   } catch (error) {
-    console.error('❌ Error saving contests to database:', error.message);
+    console.error('Error saving contests to database:', error.message);
     throw error;
   }
 };
@@ -106,25 +106,25 @@ const saveContestsToDatabase = async (contests) => {
 // Main function to get and save CodingNinjas contests
 const getCodingNinjasContests = async () => {
   try {
-    console.log('🚀 Starting CodingNinjas contest scraping...');
+    console.log('Starting CodingNinjas contest scraping...');
     
     const rawData = await fetchCodingNinjasContests();
     
     if (rawData.length === 0) {
-      console.log('⚠️ No contests fetched from CodingNinjas');
+      console.log('No contests fetched from CodingNinjas');
       return { success: false, message: 'No contests fetched' };
     }
 
     const parsedContests = parseCodingNinjasContests(rawData);
     
     if (parsedContests.length === 0) {
-      console.log('⚠️ No upcoming/live contests found');
+      console.log('No upcoming/live contests found');
       return { success: true, message: 'No upcoming contests', count: 0 };
     }
 
     const saveResult = await saveContestsToDatabase(parsedContests);
     
-    console.log('🎉 CodingNinjas scraping completed successfully!');
+    console.log('CodingNinjas scraping completed successfully!');
     return {
       success: true,
       platform: 'codingninjas',
@@ -135,7 +135,7 @@ const getCodingNinjasContests = async () => {
     };
     
   } catch (error) {
-    console.error('❌ Error in CodingNinjas scraping:', error.message);
+    console.error('Error in CodingNinjas scraping:', error.message);
     return {
       success: false,
       platform: 'codingninjas',

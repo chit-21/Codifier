@@ -3,7 +3,7 @@ const Contest = require('../models/Contest');
 // Clean up old contests from database
 const cleanupOldContests = async () => {
   try {
-    console.log('🧹 Starting contest cleanup...');
+    console.log('Starting contest cleanup...');
     
     const now = new Date();
     
@@ -16,7 +16,7 @@ const cleanupOldContests = async () => {
       { status: 'ended' }
     );
     
-    console.log(`📝 Marked ${endedResult.modifiedCount} contests as ended`);
+    console.log(`Marked ${endedResult.modifiedCount} contests as ended`);
     
     // 2. Delete very old contests (older than 30 days)
     const thirtyDaysAgo = new Date();
@@ -26,11 +26,11 @@ const cleanupOldContests = async () => {
       endTime: { $lt: thirtyDaysAgo }
     });
     
-    console.log(`🗑️ Deleted ${deleteResult.deletedCount} old contests (>30 days)`);
+    console.log(`Deleted ${deleteResult.deletedCount} old contests (>30 days)`);
     
     // 3. Get current stats
     const stats = await getContestStats();
-    console.log('📊 Current contest stats:', stats);
+    console.log('Current contest stats:', stats);
     
     return {
       success: true,
@@ -40,7 +40,7 @@ const cleanupOldContests = async () => {
     };
     
   } catch (error) {
-    console.error('❌ Error during cleanup:', error.message);
+    console.error('Error during cleanup:', error.message);
     return {
       success: false,
       error: error.message
@@ -63,7 +63,7 @@ const getContestStats = async () => {
       ended
     };
   } catch (error) {
-    console.error('❌ Error getting stats:', error.message);
+    console.error('Error getting stats:', error.message);
     return null;
   }
 };
@@ -71,7 +71,7 @@ const getContestStats = async () => {
 // Remove duplicate contests (same name and platform)
 const removeDuplicateContests = async () => {
   try {
-    console.log('🔍 Checking for duplicate contests...');
+    console.log('Checking for duplicate contests...');
     
     const duplicates = await Contest.aggregate([
       {
@@ -95,11 +95,11 @@ const removeDuplicateContests = async () => {
       removedCount += docsToRemove.length;
     }
     
-    console.log(`🗑️ Removed ${removedCount} duplicate contests`);
+    console.log(`Removed ${removedCount} duplicate contests`);
     return removedCount;
     
   } catch (error) {
-    console.error('❌ Error removing duplicates:', error.message);
+    console.error('Error removing duplicates:', error.message);
     return 0;
   }
 };
@@ -107,7 +107,7 @@ const removeDuplicateContests = async () => {
 // Full cleanup process
 const performFullCleanup = async () => {
   try {
-    console.log('🚀 Starting full database cleanup...');
+    console.log('Starting full database cleanup...');
     
     // 1. Remove duplicates
     const duplicatesRemoved = await removeDuplicateContests();
@@ -115,7 +115,7 @@ const performFullCleanup = async () => {
     // 2. Clean up old contests
     const cleanupResult = await cleanupOldContests();
     
-    console.log('✅ Full cleanup completed!');
+    console.log('Full cleanup completed!');
     return {
       success: true,
       duplicatesRemoved,
@@ -123,7 +123,7 @@ const performFullCleanup = async () => {
     };
     
   } catch (error) {
-    console.error('❌ Full cleanup failed:', error.message);
+    console.error('Full cleanup failed:', error.message);
     return {
       success: false,
       error: error.message
