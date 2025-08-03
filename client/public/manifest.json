@@ -12,6 +12,12 @@
   "action": {
     "default_popup": "popup.html"
   },
+  "icons": {
+    "16": "platforms/icon.png",
+    "32": "platforms/icon.png",
+    "48": "platforms/icon.png",
+    "128": "platforms/icon.png"
+  },
   "web_accessible_resources": [{
     "resources": [ "modern-reminder.html", "modern-reminder.js", "sliding-reminder.html", "sliding-reminder.js"],
     "matches": ["<all_urls>"]
