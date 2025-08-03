@@ -3,7 +3,7 @@ import './popup.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE = 'http://localhost:3000/api/contests';
+const API_BASE = 'https://codifier.onrender.com/api/contests';
 
 const TIME_FILTERS = [
   { label: 'All', value: '' },

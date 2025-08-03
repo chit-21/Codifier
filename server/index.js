@@ -10,7 +10,9 @@ const PORT = process.env.PORT || 10000;
 // Middleware
 // Update your CORS configuration to be more specific
 app.use(cors({
-  origin: ['chrome-extension://enhbabinmkfdkfhjhaboaicppalngemm', 'http://localhost:5173'],
+  origin: ['chrome-extension://enhbabinmkfdkfhjhaboaicppalngemm', 'http://localhost:5173',
+    'https://codifier.onrender.com'
+  ],
   methods: ['GET', 'POST'],
   credentials: true
 }));

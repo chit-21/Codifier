@@ -5,7 +5,10 @@
   "permissions": [ "storage", "alarms", "notifications", "tabs",
     "windows",
     "tabs"],
-  "host_permissions": ["http://localhost:3000/*"],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://codifier.onrender.com/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },
