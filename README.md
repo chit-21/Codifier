@@ -55,17 +55,17 @@ cd Codifier
 
 ## 🚀 Deployment on Render
 
-Your backend is live at: [https://codifier.onrender.com](https://codifier.onrender.com)
+-The Backend is live at: [https://codifier.onrender.com](https://codifier.onrender.com)
 
-- In your extension code (popup.jsx), set:
+- In extension code (popup.jsx), set:
   ```js
   const API_BASE = 'https://codifier.onrender.com/api/contests';
   ```
-- In your backend CORS config, add:
+- In backend CORS config, add:
   ```js
   'https://codifier.onrender.com'
   ```
-- In your manifest.json, add to host_permissions:
+- In manifest.json, add to host_permissions:
   ```json
   "host_permissions": [
     "http://localhost:3000/*",
