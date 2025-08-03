@@ -263,9 +263,9 @@ body {
 .spinner {
   width: 30px;
   height: 30px;
-  border: 3px solid rgba(var(--accent-primary), 0.3);
+  border: 3px solid #cba6f733; /* fallback color with alpha */
   border-radius: 50%;
-  border-top-color: var(--accent-primary);
+  border-top: 3px solid #cba6f7; /* fallback accent color */
   animation: spin 1s ease-in-out infinite;
   margin-bottom: 10px;
 }

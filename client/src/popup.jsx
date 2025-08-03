@@ -3,7 +3,7 @@ import './popup.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE = 'http://localhost:3000/api/contests'; // Change if deployed
+const API_BASE = 'http://localhost:3000/api/contests';
 
 const TIME_FILTERS = [
   { label: 'All', value: '' },
@@ -16,7 +16,6 @@ const PLATFORMS = [
   'all', 'codeforces', 'leetcode', 'atcoder', 'codechef', 'gfg', 'codingninjas'
 ];
 
-// Platform colors for visual identification
 const PLATFORM_COLORS = {
   codeforces: '#1890ff',
   leetcode: '#ffa116',
@@ -26,7 +25,6 @@ const PLATFORM_COLORS = {
   codingninjas: '#f78d1e',
 };
 
-// Platform icon paths
 const PLATFORM_ICONS = {
   codeforces: 'platforms/codeforces.png',
   leetcode: 'platforms/leetcode.png',
@@ -36,48 +34,12 @@ const PLATFORM_ICONS = {
   codingninjas: 'platforms/codingninja.jpg',
 };
 
-// Set alarm 10 minutes before contest
-// const setContestAlarm = (contest) => {
-//   const contestTime = new Date(contest.startTime).getTime();
-//   const triggerTime = contestTime - 10 * 60 * 1000;
-//   // const delayInMinutes = (triggerTime - Date.now()) / (1000 * 60);
-//   const delayInMinutes = 1;
-
-//   if (delayInMinutes <= 0) {
-//     alert("Contest is starting soon or already started!");
-//     return;
-//   }
-
-//   // Chrome enforces 1-minute minimum for packed extensions
-//   const actualDelay = Math.max(1, Math.ceil(delayInMinutes));
-//   const alarmName = `contest_${contest.name.replace(/\s/g, "_")}`;
-
-//   chrome.runtime.sendMessage({
-//     action: 'setContestAlarm',
-//     name: contest.name,
-//     alarmName,
-//     delayInMinutes: actualDelay
-//   }, (response) => {
-//     if (response && response.success) {
-//       alert(`✅ Reminder set for "${contest.name}" in ${actualDelay} minutes.`);
-//     } else {
-//       alert(`❌ Failed to set reminder: ${response?.error || 'Unknown error'}`);
-//     }
-//   });
-// };
-
 const setContestAlarm = (contest) => {
-  // Always set to 1 minute for testing
   const contestTime = new Date(contest.startTime).getTime();
   const triggerTime = contestTime - 10 * 60 * 1000;
   const delayInMinutes = (triggerTime - Date.now()) / (1000 * 60);
-//   const delayInMinutes = 1;
-  // const delayInMinutes = 1;
   const alarmName = `contest_${contest.name.replace(/\s/g, "_")}`;
-  
-  // Get platform icon for this contest
   const platformIcon = PLATFORM_ICONS[contest.platform] || 'platforms/codeforces.png';
-
   chrome.runtime.sendMessage({
     action: 'setContestAlarm',
     name: contest.name,
@@ -87,14 +49,42 @@ const setContestAlarm = (contest) => {
     platformIcon: platformIcon
   }, (response) => {
     if (response && response.success) {
-  toast.success(`✅ Reminder set for "${contest.name}" in ${delayInMinutes} minute!`);
-} else {
-  toast.error(`❌ Failed to set reminder: ${response?.error || 'Unknown error'}`);
-}
+      let msg = '';
+      const totalMinutes = Math.round(delayInMinutes);
+      if (totalMinutes >= 60) {
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        msg = `${hours} hr${hours > 1 ? 's' : ''}${minutes > 0 ? ' ' + minutes + ' min' : ''}`;
+      } else {
+        msg = `${totalMinutes} min`;
+      }
+      toast.success(`✅ Reminder set for "${contest.name}" in ${msg}!`);
+    } else {
+      toast.error(`❌ Failed to set reminder: ${response?.error || 'Unknown error'}`);
+    }
   });
 };
 
-
+const LOCAL_STORAGE_KEY = 'cachedContests';
+function saveContestsToCache(contests) {
+  const now = new Date();
+  const filtered = contests.filter(c => {
+    if (c.status && c.status === 'ended') return false;
+    if (c.endTime && new Date(c.endTime) < now) return false;
+    return true;
+  });
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(filtered));
+}
+function loadContestsFromCache() {
+  const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (!data) return [];
+  const now = new Date();
+  return JSON.parse(data).filter(c => {
+    if (c.status && c.status === 'ended') return false;
+    if (c.endTime && new Date(c.endTime) < now) return false;
+    return true;
+  });
+}
 
 export default function Popup() {
   const [contests, setContests] = useState([]);
@@ -118,21 +108,40 @@ export default function Popup() {
   }, []);
 
   useEffect(() => {
+    setFilter('');
+    const endpoints = [
+      API_BASE,
+      API_BASE + '/live',
+      API_BASE + '/upcoming?range=week',
+      API_BASE + '/upcoming?range=month'
+    ];
+    endpoints.forEach(url => {
+      fetch(url).then(() => {}).catch(() => {});
+    });
+  }, []);
+
+  useEffect(() => {
+    if (filter === '') {
+      const cached = loadContestsFromCache();
+      if (cached.length > 0) {
+        setContests(cached);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+    } else {
+      setLoading(true);
+      setError(null);
+    }
     let url = API_BASE;
     if (filter === 'live') url += '/live';
     else if (filter === 'month') url += '/upcoming?range=month';
     else if (filter === 'week') url += '/upcoming?range=week';
-
     const hasQueryParam = url.includes('?');
     if (platform !== 'all') {
       url += `${hasQueryParam ? '&' : '?'}platform=${platform}`;
     }
-
-    setLoading(true);
-    setError(null);
-
-    console.log('Fetching contests from URL:', url);
-
     fetch(url)
       .then(res => {
         if (!res.ok) {
@@ -147,12 +156,13 @@ export default function Popup() {
           else if (b.endTime) return 1;
           return new Date(a.startTime) - new Date(b.startTime);
         });
-
+        if (filter === '') {
+          saveContestsToCache(sortedContests);
+        }
         setContests(sortedContests);
         setLoading(false);
       })
       .catch(error => {
-        console.error('Error fetching contests:', error);
         setError('Failed to load contests. Please try again.');
         setLoading(false);
       });
@@ -173,13 +183,10 @@ export default function Popup() {
     const now = new Date();
     const contestStart = new Date(startTime);
     const diff = contestStart - now;
-
     if (diff <= 0) return 'Started';
-
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
     if (days > 0) return `${days}d ${hours}h`;
     if (hours > 0) return `${hours}h ${minutes}m`;
     return `${minutes}m`;
@@ -206,7 +213,6 @@ export default function Popup() {
           </button>
         </div>
       </div>
-
       <div className="tabs">
         {TIME_FILTERS.map(f => (
           <button 
@@ -218,7 +224,6 @@ export default function Popup() {
           </button>
         ))}
       </div>
-
       <div className="platform-filter">
         <select 
           value={platform} 
@@ -232,7 +237,6 @@ export default function Popup() {
           ))}
         </select>
       </div>
-
       <div className="contest-list">
         {loading ? (
           <div className="loading">
@@ -259,7 +263,6 @@ export default function Popup() {
             const platformColor = PLATFORM_COLORS[contest.platform] || '#646cff';
             const platformIconPath = PLATFORM_ICONS[contest.platform] || '';
             const timeRemaining = getTimeRemaining(contest.startTime);
-
             return (
               <div key={contest._id || contest.url} className="contest-card">
                 <div className="contest-header">
@@ -270,7 +273,6 @@ export default function Popup() {
                   ></div>
                   <h3 className="contest-name">{contest.name}</h3>
                 </div>
-
                 <div className="contest-details">
                   <div className="platform-name">
                     {platformIconPath ? (
@@ -289,7 +291,6 @@ export default function Popup() {
                     <div className="time-remaining">{timeRemaining}</div>
                   </div>
                 </div>
-
                 <div className="contest-actions">
                   <a 
                     href={contest.url} 

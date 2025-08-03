@@ -30,9 +30,10 @@ cd Codifier
   npm install
   ```
 - Configure your `.env` file as needed
-- Start the backend server:
+- Start the backend server (choose one):
   ```bash
-  npm start
+  npm start         # for production
+  npm run dev       # for development with auto-reload (nodemon)
   ```
 
 ### 3. Setup the Client (Chrome Extension)

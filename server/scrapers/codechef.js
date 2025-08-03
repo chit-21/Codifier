@@ -1,5 +1,4 @@
 const axios = require('axios');
-const Contest = require('../models/Contest');
 
 const CODECHEF_BASE_URL = "https://www.codechef.com/";
 const CODECHEF_API = "https://www.codechef.com/api/list/contests/all?sort_by=START&sorting_order=asc&offset=0&mode=all";
@@ -107,44 +106,24 @@ const saveContestsToDatabase = async (contests) => {
   }
 };
 
-// Main function to get and save CodeChef contests
+// Main function to get CodeChef contests (database-free)
 const getCodeChefContests = async () => {
   try {
     console.log('Starting CodeChef contest scraping...');
-    
     const rawData = await fetchCodeChefContests();
-    
     if (rawData.length === 0) {
       console.log('No contests fetched from CodeChef');
-      return { success: false, message: 'No contests fetched' };
+      return [];
     }
-
     const parsedContests = parseCodeChefContests(rawData);
-    
     if (parsedContests.length === 0) {
       console.log('No upcoming/live contests found');
-      return { success: true, message: 'No upcoming contests', count: 0 };
+      return [];
     }
-
-    const saveResult = await saveContestsToDatabase(parsedContests);
-    
-    console.log('CodeChef scraping completed successfully!');
-    return {
-      success: true,
-      platform: 'codechef',
-      totalFetched: rawData.length,
-      contestsParsed: parsedContests.length,
-      saved: saveResult.saved,
-      updated: saveResult.updated
-    };
-    
+    return parsedContests;
   } catch (error) {
     console.error('Error in CodeChef scraping:', error.message);
-    return {
-      success: false,
-      platform: 'codechef',
-      error: error.message
-    };
+    return [];
   }
 };
 

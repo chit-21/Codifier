@@ -1,5 +1,4 @@
 const axios = require('axios');
-const Contest = require('../models/Contest');
 
 const CODEFORCES_BASE_URL = "https://codeforces.com/contest/";
 const CODEFORCES_API = "https://codeforces.com/api/contest.list";
@@ -96,47 +95,26 @@ const saveContestsToDatabase = async (contests) => {
   }
 };
 
-// Main function to get and save Codeforces contests
+// Main function to get Codeforces contests (database-free)
 const getCodeforcesContests = async () => {
   try {
     console.log(' Starting Codeforces contest scraping...');
-    
     // Fetch raw data from API
     const rawData = await fetchCodeforcesContests();
-    
     if (rawData.length === 0) {
       console.log(' No contests fetched from Codeforces');
-      return { success: false, message: 'No contests fetched' };
+      return [];
     }
-
     // Parse and filter contests
     const parsedContests = parseCodeforcesContests(rawData);
-    
     if (parsedContests.length === 0) {
       console.log(' No upcoming/live contests found');
-      return { success: true, message: 'No upcoming contests', count: 0 };
+      return [];
     }
-
-    // Save to database
-    const saveResult = await saveContestsToDatabase(parsedContests);
-    
-    console.log(' Codeforces scraping completed successfully!');
-    return {
-      success: true,
-      platform: 'codeforces',
-      totalFetched: rawData.length,
-      contestsParsed: parsedContests.length,
-      saved: saveResult.saved,
-      updated: saveResult.updated
-    };
-    
+    return parsedContests;
   } catch (error) {
     console.error(' Error in Codeforces scraping:', error.message);
-    return {
-      success: false,
-      platform: 'codeforces',
-      error: error.message
-    };
+    return [];
   }
 };
 

@@ -1,5 +1,4 @@
 const axios = require('axios');
-const Contest = require('../models/Contest');
 
 const CODING_NINJA_BASE_URL = "https://www.naukri.com/code360/contests/";
 const CODING_NINJA_API = "https://api.codingninjas.com/api/v4/public_section/contest_list";
@@ -103,44 +102,24 @@ const saveContestsToDatabase = async (contests) => {
   }
 };
 
-// Main function to get and save CodingNinjas contests
+// Main function to get CodingNinjas contests (database-free)
 const getCodingNinjasContests = async () => {
   try {
     console.log('Starting CodingNinjas contest scraping...');
-    
     const rawData = await fetchCodingNinjasContests();
-    
     if (rawData.length === 0) {
       console.log('No contests fetched from CodingNinjas');
-      return { success: false, message: 'No contests fetched' };
+      return [];
     }
-
     const parsedContests = parseCodingNinjasContests(rawData);
-    
     if (parsedContests.length === 0) {
       console.log('No upcoming/live contests found');
-      return { success: true, message: 'No upcoming contests', count: 0 };
+      return [];
     }
-
-    const saveResult = await saveContestsToDatabase(parsedContests);
-    
-    console.log('CodingNinjas scraping completed successfully!');
-    return {
-      success: true,
-      platform: 'codingninjas',
-      totalFetched: rawData.length,
-      contestsParsed: parsedContests.length,
-      saved: saveResult.saved,
-      updated: saveResult.updated
-    };
-    
+    return parsedContests;
   } catch (error) {
     console.error('Error in CodingNinjas scraping:', error.message);
-    return {
-      success: false,
-      platform: 'codingninjas',
-      error: error.message
-    };
+    return [];
   }
 };
 

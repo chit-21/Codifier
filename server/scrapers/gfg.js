@@ -1,5 +1,4 @@
 const axios = require('axios');
-const Contest = require('../models/Contest');
 
 const GFG_BASE_URL = "https://practice.geeksforgeeks.org/contest/";
 const GFG_API = "https://practiceapi.geeksforgeeks.org/api/vr/events/?page_number=1&sub_type=all&type=contest";
@@ -108,44 +107,24 @@ const saveContestsToDatabase = async (contests) => {
   }
 };
 
-// Main function to get and save GeeksforGeeks contests
+// Main function to get GeeksforGeeks contests (database-free)
 const getGFGContests = async () => {
   try {
     console.log('Starting GeeksforGeeks contest scraping...');
-    
     const rawData = await fetchGFGContests();
-    
     if (rawData.length === 0) {
       console.log('No contests fetched from GeeksforGeeks');
-      return { success: false, message: 'No contests fetched' };
+      return [];
     }
-
     const parsedContests = parseGFGContests(rawData);
-    
     if (parsedContests.length === 0) {
       console.log('No upcoming/live contests found');
-      return { success: true, message: 'No upcoming contests', count: 0 };
+      return [];
     }
-
-    const saveResult = await saveContestsToDatabase(parsedContests);
-    
-    console.log('GeeksforGeeks scraping completed successfully!');
-    return {
-      success: true,
-      platform: 'gfg',
-      totalFetched: rawData.length,
-      contestsParsed: parsedContests.length,
-      saved: saveResult.saved,
-      updated: saveResult.updated
-    };
-    
+    return parsedContests;
   } catch (error) {
     console.error('Error in GeeksforGeeks scraping:', error.message);
-    return {
-      success: false,
-      platform: 'gfg',
-      error: error.message
-    };
+    return [];
   }
 };
 

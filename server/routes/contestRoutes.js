@@ -1,34 +1,73 @@
 const express = require('express');
-const Contest = require('../models/Contest');
 const router = express.Router();
+
+// Import scraper functions
+const { getAtCoderContests } = require('../scrapers/atcoder');
+const { getCodeChefContests } = require('../scrapers/codechef');
+const { getCodeforcesContests } = require('../scrapers/codeforces');
+const { getCodingNinjasContests } = require('../scrapers/codingninjas');
+const { getGFGContests } = require('../scrapers/gfg');
+const { getLeetCodeContests } = require('../scrapers/leetcode');
+
+// Persistent, long-lived in-memory cache for each platform
+const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 hours
+let lastRefreshTime = 0;
+let codeforcesContests = [], leetcodeContests = [], codechefContests = [], gfgContests = [], atcoderContests = [], codingninjasContests = [];
+
+async function refreshCacheIfNeeded() {
+  const now = Date.now();
+  if (now - lastRefreshTime < CACHE_DURATION && lastRefreshTime !== 0) return;
+  lastRefreshTime = now;
+  try {
+    [codechefContests, codeforcesContests, leetcodeContests, gfgContests, atcoderContests, codingninjasContests] = await Promise.all([
+      getCodeChefContests(),
+      getCodeforcesContests(),
+      getLeetCodeContests(),
+      getGFGContests(),
+      getAtCoderContests(),
+      getCodingNinjasContests()
+    ]);
+    console.log('Contest cache refreshed!');
+  } catch (error) {
+    console.error('Error refreshing contest cache:', error);
+  }
+}
+
+async function fetchAllContestsCached() {
+  await refreshCacheIfNeeded();
+  return [
+    ...atcoderContests,
+    ...codechefContests,
+    ...codeforcesContests,
+    ...codingninjasContests,
+    ...gfgContests,
+    ...leetcodeContests
+  ];
+}
 
 // GET /api/contests - Get all contests with optional filtering
 router.get('/', async (req, res) => {
   try {
     const { platform, status, limit = 50 } = req.query;
-    
-    // Build query object
-    let query = {};
-    
+    let contests = await fetchAllContestsCached();
+
+    // Filtering
     if (platform) {
-      query.platform = platform.toLowerCase();
+      contests = contests.filter(c => c.platform === platform.toLowerCase());
     }
-    
     if (status) {
-      query.status = status.toLowerCase();
+      contests = contests.filter(c => c.status === status.toLowerCase());
     }
-    
-    // Execute query
-    const contests = await Contest.find(query)
-      .sort({ startTime: 1 })
-      .limit(parseInt(limit));
-    
+    // Sort by startTime
+    contests = contests.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+    // Limit
+    contests = contests.slice(0, parseInt(limit));
+
     res.json({
       success: true,
       count: contests.length,
       data: contests
     });
-    
   } catch (error) {
     console.error('Error fetching contests:', error);
     res.status(500).json({
@@ -40,33 +79,21 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/contests/live - Get currently running contests
-// In the live contests route
 router.get('/live', async (req, res) => {
   try {
     const { platform } = req.query;
-    console.log('Live contests - Platform filter:', platform);
-    
-    let query = {
-      startTime: { $lte: new Date() },
-      endTime: { $gte: new Date() }
-    };
-    
+    let contests = await fetchAllContestsCached();
+    const now = new Date();
+    contests = contests.filter(c => new Date(c.startTime) <= now && new Date(c.endTime) >= now);
     if (platform) {
-      query.platform = platform.toLowerCase();
-      console.log('Applying platform filter:', platform.toLowerCase());
+      contests = contests.filter(c => c.platform === platform.toLowerCase());
     }
-    
-    const liveContests = await Contest.find(query).sort({ startTime: 1 });
-    console.log(`Found ${liveContests.length} live contests`);
-    // Log platforms of found contests
-    console.log('Platforms found:', liveContests.map(c => c.platform));
-    
+    contests = contests.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
     res.json({
       success: true,
-      count: liveContests.length,
-      data: liveContests
+      count: contests.length,
+      data: contests
     });
-    
   } catch (error) {
     console.error('Error fetching live contests:', error);
     res.status(500).json({
@@ -77,12 +104,12 @@ router.get('/live', async (req, res) => {
   }
 });
 
-// Similar logs in the upcoming contests route
+// GET /api/contests/upcoming - Get upcoming contests
 router.get('/upcoming', async (req, res) => {
   try {
     const { range, platform } = req.query;
-    console.log('Upcoming contests - Platform filter:', platform, 'Range:', range);
-    
+    let contests = await fetchAllContestsCached();
+    const now = new Date();
     let endDate = null;
     if (range === 'week') {
       endDate = new Date();
@@ -91,30 +118,20 @@ router.get('/upcoming', async (req, res) => {
       endDate = new Date();
       endDate.setDate(endDate.getDate() + 30);
     }
-    
-    let query = { startTime: { $gt: new Date() } };
+    contests = contests.filter(c => new Date(c.startTime) > now);
     if (endDate) {
-      query.startTime.$lt = endDate;
+      contests = contests.filter(c => new Date(c.startTime) < endDate);
     }
-    
-    // Add platform filtering
     if (platform) {
-      query.platform = platform.toLowerCase();
-      console.log('Applying platform filter:', platform.toLowerCase());
+      contests = contests.filter(c => c.platform === platform.toLowerCase());
     }
-    
-    const upcomingContests = await Contest.find(query).sort({ startTime: 1 });
-    console.log(`Found ${upcomingContests.length} upcoming contests`);
-    // Log platforms of found contests
-    console.log('Platforms found:', upcomingContests.map(c => c.platform));
-    
+    contests = contests.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
     res.json({
       success: true,
-      count: upcomingContests.length,
+      count: contests.length,
       range: range || 'all',
-      data: upcomingContests
+      data: contests
     });
-    
   } catch (error) {
     console.error('Error fetching upcoming contests:', error);
     res.status(500).json({
@@ -128,14 +145,13 @@ router.get('/upcoming', async (req, res) => {
 // GET /api/contests/platforms - Get available platforms
 router.get('/platforms', async (req, res) => {
   try {
-    const platforms = await Contest.distinct('platform');
-    
+    const contests = await fetchAllContestsCached();
+    const platforms = Array.from(new Set(contests.map(c => c.platform)));
     res.json({
       success: true,
       count: platforms.length,
       data: platforms
     });
-    
   } catch (error) {
     console.error('Error fetching platforms:', error);
     res.status(500).json({
@@ -146,152 +162,6 @@ router.get('/platforms', async (req, res) => {
   }
 });
 
-// GET /api/contests/:id - Get specific contest by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const contest = await Contest.findById(req.params.id);
-    
-    if (!contest) {
-      return res.status(404).json({
-        success: false,
-        message: 'Contest not found'
-      });
-    }
-    
-    res.json({
-      success: true,
-      data: contest
-    });
-    
-  } catch (error) {
-    console.error('Error fetching contest:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching contest',
-      error: error.message
-    });
-  }
-});
-
-// POST /api/contests - Create new contest (for testing/manual entry)
-router.post('/', async (req, res) => {
-  try {
-    const contestData = req.body;
-    
-    // Create new contest
-    const contest = new Contest(contestData);
-    await contest.save();
-    
-    res.status(201).json({
-      success: true,
-      message: 'Contest created successfully',
-      data: contest
-    });
-    
-  } catch (error) {
-    console.error('Error creating contest:', error);
-    res.status(400).json({
-      success: false,
-      message: 'Error creating contest',
-      error: error.message
-    });
-  }
-});
-
-// PUT /api/contests/:id - Update contest
-router.put('/:id', async (req, res) => {
-  try {
-    const contest = await Contest.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    
-    if (!contest) {
-      return res.status(404).json({
-        success: false,
-        message: 'Contest not found'
-      });
-    }
-    
-    res.json({
-      success: true,
-      message: 'Contest updated successfully',
-      data: contest
-    });
-    
-  } catch (error) {
-    console.error('Error updating contest:', error);
-    res.status(400).json({
-      success: false,
-      message: 'Error updating contest',
-      error: error.message
-    });
-  }
-});
-
-// DELETE /api/contests/:id - Delete contest
-router.delete('/:id', async (req, res) => {
-  try {
-    const contest = await Contest.findByIdAndDelete(req.params.id);
-    
-    if (!contest) {
-      return res.status(404).json({
-        success: false,
-        message: 'Contest not found'
-      });
-    }
-    
-    res.json({
-      success: true,
-      message: 'Contest deleted successfully'
-    });
-    
-  } catch (error) {
-    console.error('Error deleting contest:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error deleting contest',
-      error: error.message
-    });
-  }
-});
-
-// GET /api/contests/stats/summary - Get contest statistics
-router.get('/stats/summary', async (req, res) => {
-  try {
-    const totalContests = await Contest.countDocuments();
-    const liveContests = await Contest.countDocuments({
-      startTime: { $lte: new Date() },
-      endTime: { $gte: new Date() }
-    });
-    const upcomingContests = await Contest.countDocuments({
-      startTime: { $gt: new Date() }
-    });
-    
-    const platformStats = await Contest.aggregate([
-      { $group: { _id: '$platform', count: { $sum: 1 } } },
-      { $sort: { count: -1 } }
-    ]);
-    
-    res.json({
-      success: true,
-      data: {
-        total: totalContests,
-        live: liveContests,
-        upcoming: upcomingContests,
-        platforms: platformStats
-      }
-    });
-    
-  } catch (error) {
-    console.error('Error fetching contest stats:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching contest statistics',
-      error: error.message
-    });
-  }
-});
+// All other endpoints (CRUD, stats, etc.) are not supported in stateless mode
 
 module.exports = router;

@@ -1,5 +1,4 @@
 const axios = require('axios');
-const Contest = require('../models/Contest');
 
 const LEETCODE_BASE_URL = "https://leetcode.com/contest/";
 const LEETCODE_API = "https://leetcode.com/graphql";
@@ -104,44 +103,24 @@ const saveContestsToDatabase = async (contests) => {
   }
 };
 
-// Main function to get and save LeetCode contests
+// Main function to get LeetCode contests (database-free)
 const getLeetCodeContests = async () => {
   try {
     console.log(' Starting LeetCode contest scraping...');
-    
     const rawData = await fetchLeetCodeContests();
-    
     if (rawData.length === 0) {
       console.log(' No contests fetched from LeetCode');
-      return { success: false, message: 'No contests fetched' };
+      return [];
     }
-
     const parsedContests = parseLeetCodeContests(rawData);
-    
     if (parsedContests.length === 0) {
       console.log(' No upcoming contests found');
-      return { success: true, message: 'No upcoming contests', count: 0 };
+      return [];
     }
-
-    const saveResult = await saveContestsToDatabase(parsedContests);
-    
-    console.log(' LeetCode scraping completed successfully!');
-    return {
-      success: true,
-      platform: 'leetcode',
-      totalFetched: rawData.length,
-      contestsParsed: parsedContests.length,
-      saved: saveResult.saved,
-      updated: saveResult.updated
-    };
-    
+    return parsedContests;
   } catch (error) {
     console.error(' Error in LeetCode scraping:', error.message);
-    return {
-      success: false,
-      platform: 'leetcode',
-      error: error.message
-    };
+    return [];
   }
 };
 

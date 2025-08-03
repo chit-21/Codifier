@@ -1,6 +1,5 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const Contest = require('../models/Contest');
 
 const ATCODER_BASE_URL = "https://atcoder.jp";
 const ATCODER_CONTESTS_PAGE = "https://atcoder.jp/contests/";
@@ -119,37 +118,19 @@ const saveContestsToDatabase = async (contests) => {
   }
 };
 
-// Main function to get and save AtCoder contests
+// Main function to get AtCoder contests (database-free)
 const getAtCoderContests = async () => {
   try {
     console.log('🚀 Starting AtCoder contest scraping...');
-    
     const contests = await fetchAtCoderContests();
-    
     if (contests.length === 0) {
       console.log('⚠️ No upcoming contests found on AtCoder');
-      return { success: true, message: 'No upcoming contests', count: 0 };
+      return [];
     }
-
-    const saveResult = await saveContestsToDatabase(contests);
-    
-    console.log('🎉 AtCoder scraping completed successfully!');
-    return {
-      success: true,
-      platform: 'atcoder',
-      totalFetched: contests.length,
-      contestsParsed: contests.length,
-      saved: saveResult.saved,
-      updated: saveResult.updated
-    };
-    
+    return contests;
   } catch (error) {
     console.error('❌ Error in AtCoder scraping:', error.message);
-    return {
-      success: false,
-      platform: 'atcoder',
-      error: error.message
-    };
+    return [];
   }
 };
 

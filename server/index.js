@@ -1,7 +1,6 @@
 const express = require('express');
-require('./cron/scrapeCron');
+// require('./cron/scrapeCron'); // Removed: no cron jobs needed
 const cors = require('cors');
-const connectDB = require('./config/db');
 const contestRoutes = require('./routes/contestRoutes');
 require('dotenv').config();
 
@@ -39,25 +38,11 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Connect to MongoDB and start server
-const startServer = async () => {
-  try {
-    // Connect to MongoDB
-    await connectDB();
-    
-    // Start server
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-      console.log(`API URL: http://localhost:${PORT}`);
-      console.log(`Health Check: http://localhost:${PORT}/health`);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
-};
-
-// Start the application
-startServer();
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`API URL: http://localhost:${PORT}`);
+  console.log(`Health Check: http://localhost:${PORT}/health`);
+});
 
 module.exports = app;
