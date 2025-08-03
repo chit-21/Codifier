@@ -1,5 +1,5 @@
 const express = require('express');
-// require('./cron/scrapeCron'); // Removed: no cron jobs needed
+
 const cors = require('cors');
 const contestRoutes = require('./routes/contestRoutes');
 require('dotenv').config();
