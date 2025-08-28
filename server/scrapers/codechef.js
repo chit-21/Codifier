@@ -76,35 +76,8 @@ const parseCodeChefContests = (data) => {
   return contests;
 };
 
-// Save contests to database
-const saveContestsToDatabase = async (contests) => {
-  try {
-    let savedCount = 0;
-    let updatedCount = 0;
 
-    for (const contestData of contests) {
-      const existingContest = await Contest.findOne({
-        platform: contestData.platform,
-        name: contestData.name
-      });
 
-      if (existingContest) {
-        await Contest.findByIdAndUpdate(existingContest._id, contestData);
-        updatedCount++;
-      } else {
-        const contest = new Contest(contestData);
-        await contest.save();
-        savedCount++;
-      }
-    }
-
-    console.log(`Saved ${savedCount} new contests, updated ${updatedCount} existing contests`);
-    return { saved: savedCount, updated: updatedCount };
-  } catch (error) {
-    console.error('Error saving contests to database:', error.message);
-    throw error;
-  }
-};
 
 // Main function to get CodeChef contests (database-free)
 const getCodeChefContests = async () => {

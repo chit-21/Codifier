@@ -62,38 +62,8 @@ const parseCodeforcesContests = (data) => {
   return contests;
 };
 
-// Save contests to database
-const saveContestsToDatabase = async (contests) => {
-  try {
-    let savedCount = 0;
-    let updatedCount = 0;
 
-    for (const contestData of contests) {
-      // Check if contest already exists (by platform and name)
-      const existingContest = await Contest.findOne({
-        platform: contestData.platform,
-        name: contestData.name
-      });
 
-      if (existingContest) {
-        // Update existing contest
-        await Contest.findByIdAndUpdate(existingContest._id, contestData);
-        updatedCount++;
-      } else {
-        // Create new contest
-        const contest = new Contest(contestData);
-        await contest.save();
-        savedCount++;
-      }
-    }
-
-    console.log(` Saved ${savedCount} new contests, updated ${updatedCount} existing contests`);
-    return { saved: savedCount, updated: updatedCount };
-  } catch (error) {
-    console.error(' Error saving contests to database:', error.message);
-    throw error;
-  }
-};
 
 // Main function to get Codeforces contests (database-free)
 const getCodeforcesContests = async () => {
